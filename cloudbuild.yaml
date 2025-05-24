@@ -1,0 +1,39 @@
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t',
+      'gcr.io/$PROJECT_ID/vicinity-backend:$COMMIT_SHA',
+      '-t',
+      'gcr.io/$PROJECT_ID/vicinity-backend:latest',
+      '.'
+    ]
+
+  # Push the Docker image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'push',
+      'gcr.io/$PROJECT_ID/vicinity-backend:$COMMIT_SHA'
+    ]
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'vicinity-backend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/vicinity-backend:$COMMIT_SHA'
+      - '--platform'
+      - 'managed'
+      - '--region'
+      - 'us-central1'
+      - '--allow-unauthenticated'
+      - '--set-env-vars=ENV=production'
+
+# Store images in Google Container Registry
+images:
+  - 'gcr.io/$PROJECT_ID/vicinity-backend:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/vicinity-backend:latest'
