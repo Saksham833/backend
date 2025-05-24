@@ -2,9 +2,12 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-COPY backend/requirements.txt .
+# Copy requirements first for better caching
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY backend/ .
+# Copy the rest of the application
+COPY . .
+
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000"]
